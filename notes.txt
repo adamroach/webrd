@@ -1,0 +1,18 @@
+Screen capture (slow):
+  https://github.com/kbinani/screenshot/blob/master/darwin.go#L223
+
+Video capture to a file:
+  https://developer.apple.com/library/archive/qa/qa1740/_index.html
+
+Related documentation:
+  https://developer.apple.com/documentation/avfoundation/avcapturesession
+  https://developer.apple.com/documentation/avfoundation/avcapturesession/outputs
+  https://developer.apple.com/documentation/avfoundation/avcaptureoutput
+  https://developer.apple.com/documentation/avfoundation/avcapturevideodataoutput
+
+Examples:
+  https://stackoverflow.com/questions/57048430/correctly-record-video-using-avcapturevideodataoutput
+  https://gist.github.com/jeroentrappers/2576818
+
+Swift example including AVCaptureVideoDataOutput:
+  https://developer.apple.com/documentation/avfoundation/setting-up-a-capture-session
