@@ -3,7 +3,8 @@
 #import <CoreVideo/CoreVideo.h>
 #import <Foundation/Foundation.h>
 
-@interface Capturer : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate> {
+@interface VideoCapturer
+    : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate> {
   @private
     AVCaptureSession *mSession;
     AVCaptureVideoDataOutput *mVideoDataOutput;

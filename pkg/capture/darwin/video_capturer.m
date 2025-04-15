@@ -1,12 +1,12 @@
-#import "capturer.h"
+#import "video_capturer.h"
 #include <CoreMedia/CMSampleBuffer.h>
 #include <CoreVideo/CVImageBuffer.h>
 #include <CoreVideo/CVPixelBuffer.h>
 
-extern void process_frame(void *opaque, void *y, void *cb, void *cr,
-                          int yStride, int cStride, int width, int height);
+extern void process_yuv_frame(void *opaque, void *y, void *cb, void *cr,
+                              int yStride, int cStride, int width, int height);
 
-@implementation Capturer
+@implementation VideoCapturer
 - (void)start:(void *)opaque {
     if (mSession) {
         [self stop];
@@ -112,7 +112,8 @@ extern void process_frame(void *opaque, void *y, void *cb, void *cr,
     int Width = CVPixelBufferGetWidth(img);
     int Height = CVPixelBufferGetHeight(img);
 
-    process_frame(mCallbackOpaque, Y, Cb, Cr, YStride, CStride, Width, Height);
+    process_yuv_frame(mCallbackOpaque, Y, Cb, Cr, YStride, CStride, Width,
+                      Height);
 
     CVPixelBufferUnlockBaseAddress(img, 0);
 }
