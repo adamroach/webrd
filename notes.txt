@@ -16,3 +16,8 @@ Examples:
 
 Swift example including AVCaptureVideoDataOutput:
   https://developer.apple.com/documentation/avfoundation/setting-up-a-capture-session
+
+  ---------------------------------------------------------------------------
+
+  MacOS keypress events:
+    https://stackoverflow.com/questions/10734349/simulate-keypress-for-system-wide-hotkeys

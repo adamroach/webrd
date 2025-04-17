@@ -1,0 +1,8 @@
+all: true
+recursive: true
+dir: mock
+pkgname: mock
+filename: '{{.InterfaceName|snakecase}}.go'
+structname: '{{.InterfaceName}}'
+packages:
+    github.com/adamroach/webrd/pkg:
