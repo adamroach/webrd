@@ -6,7 +6,7 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type VideoSender struct {
+type AudioSender struct {
 	encoder    codec.ReadCloser
 	track      *webrtc.TrackLocalStaticRTP
 	sender     *webrtc.RTPSender

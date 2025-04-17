@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+
 	"github.com/adamroach/webrd/pkg/hid/keys"
 	"github.com/adamroach/webrd/pkg/hid/mouse"
 )
@@ -60,4 +62,35 @@ type Candidate struct {
 	SdpMLineIndex    int    `json:"sdpMLineIndex"`
 	SdpMid           string `json:"sdpMid"`
 	UsernameFragment string `json:"usernameFragment"`
+}
+
+// /////////////////////////////////////////////////////////////////////////
+func MakeMessage(bytes []byte) (msg any, err error) {
+	var msgMap map[string]any
+	err = json.Unmarshal(bytes, &msgMap)
+	if err != nil {
+		return
+	}
+	switch msgMap["type"] {
+	case TypeKeyboard:
+		msg = KeyboardMessage{}
+	case TypeMouseButton:
+		msg = MouseButtonMessage{}
+	case TypeMouseMove:
+		msg = MouseMoveMessage{}
+	case TypeOffer:
+		msg = OfferMessage{}
+	case TypeAnswer:
+		msg = AnswerMessage{}
+	case TypeIceCandidate:
+		msg = IceCandidateMessage{}
+	default:
+		msg = msgMap
+		return
+	}
+	err = json.Unmarshal(bytes, msg)
+	if err != nil {
+		return
+	}
+	return
 }
