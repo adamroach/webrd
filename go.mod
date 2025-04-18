@@ -3,6 +3,7 @@ module github.com/adamroach/webrd
 go 1.24.1
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/pion/mediadevices v0.7.1
 	github.com/pion/rtp v1.8.13
@@ -12,7 +13,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/pion/datachannel v1.5.10 // indirect
 	github.com/pion/dtls/v3 v3.0.6 // indirect
 	github.com/pion/ice/v4 v4.0.10 // indirect

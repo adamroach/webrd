@@ -16,7 +16,7 @@ type WebSocket struct {
 	recv chan []byte
 }
 
-func ServeWs(w http.ResponseWriter, r *http.Request) {
+func ServeWs(s *Server, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -24,11 +24,28 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // TODO -- make this more secure
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err) // TODO -- send error to client
+		log.Println(err)
 		http.Error(w, "Could not upgrade connection", http.StatusInternalServerError)
 		w.Write(fmt.Appendf(nil, "Could not upgrade connection: %v", err))
 		return
 	}
+	ws, err := NewWebSocket(conn)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Could not create websocket", http.StatusInternalServerError)
+		w.Write(fmt.Appendf(nil, "Could not create websocket: %v", err))
+		return
+	}
+	_, err = s.NewSession(ws)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Could not start session", http.StatusInternalServerError)
+		w.Write(fmt.Appendf(nil, "Could not start session: %v", err))
+		return
+	}
+}
+
+func NewWebSocket(conn *websocket.Conn) (*WebSocket, error) {
 	client := &WebSocket{
 		conn: conn,
 		send: make(chan []byte, 100),
@@ -36,6 +53,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 	go client.readMessages()
 	go client.writeMessages()
+	return client, nil
 }
 
 func (ws *WebSocket) Send(message any) error {
