@@ -16,7 +16,7 @@ type WebSocket struct {
 	recv chan []byte
 }
 
-func ServeWs(s *Server, w http.ResponseWriter, r *http.Request) {
+func ServeWs(server *Server, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -36,7 +36,7 @@ func ServeWs(s *Server, w http.ResponseWriter, r *http.Request) {
 		w.Write(fmt.Appendf(nil, "Could not create websocket: %v", err))
 		return
 	}
-	_, err = s.NewSession(ws)
+	_, err = server.NewSession(ws)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Could not start session", http.StatusInternalServerError)
