@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/adamroach/webrd/pkg/hid/key"
-	"github.com/adamroach/webrd/pkg/hid/mouse"
 )
 
 type MessageType string
@@ -13,6 +12,7 @@ const (
 	TypeKeyboard     MessageType = "keyboard"
 	TypeMouseButton  MessageType = "mouse_button"
 	TypeMouseMove    MessageType = "mouse_move"
+	TypeMouseWheel   MessageType = "mouse_wheel"
 	TypeOffer        MessageType = "offer"
 	TypeAnswer       MessageType = "answer"
 	TypeIceCandidate MessageType = "candidate"
@@ -28,14 +28,24 @@ type KeyboardMessage struct {
 }
 
 type MouseButtonMessage struct {
-	Type  MessageType `json:"type"`
-	Event mouse.Event `json:"event"`
+	Type   MessageType `json:"type"`
+	Button int         `json:"button"`
+	X      int         `json:"x"`
+	Y      int         `json:"y"`
+	Down   bool        `json:"down"`
 }
 
 type MouseMoveMessage struct {
 	Type MessageType `json:"type"`
 	X    int         `json:"x"`
 	Y    int         `json:"y"`
+}
+
+type MouseWheelMessage struct {
+	Type   MessageType `json:"type"`
+	DeltaX int         `json:"deltaX"`
+	DeltaY int         `json:"deltaY"`
+	DeltaZ int         `json:"deltaZ"`
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -79,6 +89,8 @@ func MakeMessage(bytes []byte) (msg any, err error) {
 		msg = &MouseButtonMessage{}
 	case TypeMouseMove:
 		msg = &MouseMoveMessage{}
+	case TypeMouseWheel:
+		msg = &MouseWheelMessage{}
 	case TypeOffer:
 		msg = &OfferMessage{}
 	case TypeAnswer:

@@ -15,7 +15,9 @@ func main() {
 		MakeKeyboard: func() (hid.Keyboard, error) {
 			return hid.NewKeyboard()
 		},
-		MakeMouse: nil,
+		MakeMouse: func() (hid.Mouse, error) {
+			return hid.NewMouse()
+		},
 	}
 	panic(server.Run())
 }

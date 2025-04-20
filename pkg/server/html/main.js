@@ -12,8 +12,8 @@ window.addEventListener('load', async () => {
 
     videoElement.addEventListener('pointermove', (event) => {
         const rect = videoElement.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = event.offsetX;
+        const y = event.offsetY;
 
         websocket.send(JSON.stringify({
             type: 'mouse_move',
@@ -44,6 +44,30 @@ window.addEventListener('load', async () => {
     };
     document.body.addEventListener('keydown', sendKeyEvent);
     document.body.addEventListener('keyup', sendKeyEvent);
+
+    sendMouseButtonEvent = function(event) {
+        console.log("Mouse button event", event);
+        websocket.send(JSON.stringify({
+            type: 'mouse_button',
+            button: event.button,
+            x: event.clientX,
+            y: event.clientY,
+            down: event.type === 'mousedown',
+        }));
+        event.preventDefault();
+    };
+    videoElement.addEventListener('mousedown', sendMouseButtonEvent);
+    videoElement.addEventListener('mouseup', sendMouseButtonEvent);
+
+    videoElement.addEventListener('wheel', (event) => {
+        websocket.send(JSON.stringify({
+            type: 'mouse_wheel',
+            deltaX: event.deltaX,
+            deltaY: event.deltaY,
+            deltaZ: event.deltaZ,
+        }));
+        event.preventDefault();
+    });
 
     websocket.onmessage = async (event) => {
         console.log("Received message", event.data)

@@ -5,7 +5,6 @@
 package mock
 
 import (
-	"github.com/adamroach/webrd/pkg/hid/mouse"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -37,16 +36,16 @@ func (_m *Mouse) EXPECT() *Mouse_Expecter {
 }
 
 // Button provides a mock function for the type Mouse
-func (_mock *Mouse) Button(event mouse.Event) error {
-	ret := _mock.Called(event)
+func (_mock *Mouse) Button(button int, down bool) error {
+	ret := _mock.Called(button, down)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Button")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(mouse.Event) error); ok {
-		r0 = returnFunc(event)
+	if returnFunc, ok := ret.Get(0).(func(int, bool) error); ok {
+		r0 = returnFunc(button, down)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -59,14 +58,15 @@ type Mouse_Button_Call struct {
 }
 
 // Button is a helper method to define mock.On call
-//   - event
-func (_e *Mouse_Expecter) Button(event interface{}) *Mouse_Button_Call {
-	return &Mouse_Button_Call{Call: _e.mock.On("Button", event)}
+//   - button
+//   - down
+func (_e *Mouse_Expecter) Button(button interface{}, down interface{}) *Mouse_Button_Call {
+	return &Mouse_Button_Call{Call: _e.mock.On("Button", button, down)}
 }
 
-func (_c *Mouse_Button_Call) Run(run func(event mouse.Event)) *Mouse_Button_Call {
+func (_c *Mouse_Button_Call) Run(run func(button int, down bool)) *Mouse_Button_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(mouse.Event))
+		run(args[0].(int), args[1].(bool))
 	})
 	return _c
 }
@@ -76,7 +76,7 @@ func (_c *Mouse_Button_Call) Return(err error) *Mouse_Button_Call {
 	return _c
 }
 
-func (_c *Mouse_Button_Call) RunAndReturn(run func(event mouse.Event) error) *Mouse_Button_Call {
+func (_c *Mouse_Button_Call) RunAndReturn(run func(button int, down bool) error) *Mouse_Button_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -123,6 +123,53 @@ func (_c *Mouse_Move_Call) Return(err error) *Mouse_Move_Call {
 }
 
 func (_c *Mouse_Move_Call) RunAndReturn(run func(x int, y int) error) *Mouse_Move_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Wheel provides a mock function for the type Mouse
+func (_mock *Mouse) Wheel(deltaX int, deltaY int, deltaZ int) error {
+	ret := _mock.Called(deltaX, deltaY, deltaZ)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Wheel")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(int, int, int) error); ok {
+		r0 = returnFunc(deltaX, deltaY, deltaZ)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// Mouse_Wheel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Wheel'
+type Mouse_Wheel_Call struct {
+	*mock.Call
+}
+
+// Wheel is a helper method to define mock.On call
+//   - deltaX
+//   - deltaY
+//   - deltaZ
+func (_e *Mouse_Expecter) Wheel(deltaX interface{}, deltaY interface{}, deltaZ interface{}) *Mouse_Wheel_Call {
+	return &Mouse_Wheel_Call{Call: _e.mock.On("Wheel", deltaX, deltaY, deltaZ)}
+}
+
+func (_c *Mouse_Wheel_Call) Run(run func(deltaX int, deltaY int, deltaZ int)) *Mouse_Wheel_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(int), args[1].(int), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *Mouse_Wheel_Call) Return(err error) *Mouse_Wheel_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *Mouse_Wheel_Call) RunAndReturn(run func(deltaX int, deltaY int, deltaZ int) error) *Mouse_Wheel_Call {
 	_c.Call.Return(run)
 	return _c
 }

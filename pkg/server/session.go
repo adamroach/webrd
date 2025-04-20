@@ -100,12 +100,19 @@ func (s *Session) handleMessages() {
 			}
 		case *MouseButtonMessage:
 			if s.Mouse != nil {
-				err = s.Mouse.Button(message.Event)
+				err = s.Mouse.Button(message.Button, message.X, message.Y, message.Down)
 				if err != nil {
 					log.Printf("could not send mouse button event: %v\n", err)
 				}
 			} else {
 				log.Printf("mouse not available\n")
+			}
+		case *MouseWheelMessage:
+			if s.Mouse != nil {
+				err = s.Mouse.Wheel(message.DeltaX, message.DeltaY, message.DeltaZ)
+				if err != nil {
+					log.Printf("could not send mouse wheel event: %v\n", err)
+				}
 			}
 		case *MouseMoveMessage:
 			if s.Mouse != nil {
