@@ -13,18 +13,16 @@ import (
 )
 
 type VideoSender struct {
-	encoder            codec.ReadCloser
-	track              *webrtc.TrackLocalStaticRTP
-	sender             *webrtc.RTPSender
-	packetizer         rtp.Packetizer
-	codecCapability    webrtc.RTPCodecCapability
-	keyFrameController codec.KeyFrameController
+	encoder         codec.ReadCloser
+	track           *webrtc.TrackLocalStaticRTP
+	sender          *webrtc.RTPSender
+	packetizer      rtp.Packetizer
+	codecCapability webrtc.RTPCodecCapability
 }
 
-func NewVideoSender(encoder codec.ReadCloser, keyFrameController codec.KeyFrameController) *VideoSender {
+func NewVideoSender(encoder codec.ReadCloser) *VideoSender {
 	return &VideoSender{
-		encoder:            encoder,
-		keyFrameController: keyFrameController,
+		encoder: encoder,
 	}
 }
 
@@ -141,17 +139,23 @@ func (s *VideoSender) handleRtcp() {
 			log.Printf("Error unmarshalling RTCP: %v", err)
 			continue
 		}
+
 		for _, message := range messages {
 			switch msg := message.(type) {
 			case *rtcp.PictureLossIndication:
 				log.Printf("Received PLI: %v", msg)
-				if s.keyFrameController != nil {
-					s.keyFrameController.ForceKeyFrame()
+				keyFrameController, _ := s.encoder.Controller().(codec.KeyFrameController)
+				if keyFrameController != nil {
+					log.Print("Forcing key frame")
+					keyFrameController.ForceKeyFrame()
+				} else {
+					log.Print("Cannot force key frame: KeyFrameController is nil")
 				}
 			case *rtcp.FullIntraRequest:
 				log.Printf("Received FIR: %v", msg)
-				if s.keyFrameController != nil {
-					s.keyFrameController.ForceKeyFrame()
+				keyFrameController, _ := s.encoder.Controller().(codec.KeyFrameController)
+				if keyFrameController != nil {
+					keyFrameController.ForceKeyFrame()
 				}
 			default:
 				// Handle other RTCP messages if needed

@@ -1,7 +1,7 @@
 package hid
 
-import "github.com/adamroach/webrd/pkg/hid/keys"
+import "github.com/adamroach/webrd/pkg/hid/key"
 
 type Keyboard interface {
-	Key(event keys.Event) error
+	Key(event key.Event) error
 }

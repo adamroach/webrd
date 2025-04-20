@@ -32,7 +32,7 @@ extern void process_yuv_frame(void *opaque, void *y, void *cb, void *cr,
         mSession = nil;
         return;
     }
-    input.minFrameDuration = CMTimeMake(1, 30); // 30 fps
+    input.minFrameDuration = CMTimeMake(1, 30); // 30 fps -- TODO make configurable
     if ([mSession canAddInput:input])
         [mSession addInput:input];
 

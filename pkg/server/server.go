@@ -2,10 +2,14 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/adamroach/webrd/pkg/capture"
 	"github.com/adamroach/webrd/pkg/hid"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 )
 
@@ -16,6 +20,32 @@ type Server struct {
 	MakeMouse         func() (hid.Mouse, error)
 	mu                sync.RWMutex // mutex to protect access to sessions
 	sessions          map[uuid.UUID]*Session
+}
+
+func (s *Server) Run() error {
+	const listen = ":8080" // TODO make this configurable
+	s.sessions = make(map[uuid.UUID]*Session)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+
+	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		ServeWs(s, w, r)
+	})
+
+	// All other paths serve from the filesystem -- TODO convert to go:embed
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./pkg/server/html/index.html")
+	})
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		root := http.Dir("./pkg/server/html")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
+
+	fmt.Printf("Server listening on %s\n", listen)
+	return http.ListenAndServe(listen, r)
 }
 
 func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
@@ -37,9 +67,6 @@ func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not create audio capturer: %v", err)
 		}
-		if err := audioCapturer.Start(); err != nil {
-			return nil, fmt.Errorf("could not start audio capturer: %v", err)
-		}
 	}
 
 	if s.MakeKeyboard != nil {
@@ -56,10 +83,23 @@ func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
 		}
 	}
 
+	videoEncoder, err := NewVideoEncoder(videoCapturer, 8_000_000, 30) // TODO make this configurable
+	if err != nil {
+		return nil, fmt.Errorf("could not create video encoder: %v", err)
+	}
+	videoSender := NewVideoSender(videoEncoder)
+	webRTCConnection, err := NewWebRTCConnection(
+		WithVideoSender(videoSender),
+		WithTURNServers([]string{"stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"}), // TODO make this configurable
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not create WebRTC connection: %v", err)
+	}
+
 	session := &Session{
 		ID:               uuid.New(),
 		Server:           s,
-		WebRTCConnection: &WebRTCConnection{},
+		WebRTCConnection: webRTCConnection,
 		MessageChannel:   messageChannel,
 		VideoCapturer:    videoCapturer,
 		AudioCapturer:    audioCapturer,

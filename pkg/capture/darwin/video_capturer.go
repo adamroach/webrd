@@ -33,9 +33,7 @@ static void stopVideoCapture(void *capturer) {
 */
 import "C"
 import (
-	"fmt"
 	"image"
-	"io"
 	"runtime"
 	"unsafe"
 )
@@ -45,13 +43,13 @@ type VideoCapturer struct {
 	frames   chan (image.Image)
 }
 
-func NewVideoCapturer() *VideoCapturer {
+func NewVideoCapturer() (*VideoCapturer, error) {
 	c := &VideoCapturer{
 		capturer: C.newVideoCapturer(),
 		frames:   make(chan image.Image, 4),
 	}
 	runtime.SetFinalizer(c, func(c *VideoCapturer) { C.releaseVideoCapturer(c.capturer) })
-	return c
+	return c, nil
 }
 
 func (c *VideoCapturer) Start() error {
@@ -78,21 +76,10 @@ func (c *VideoCapturer) Stop() error {
 
 func (c *VideoCapturer) processFrame(img image.Image) {
 	c.frames <- img
-	fmt.Printf("Got image in callback: %v\n", img.Bounds())
 }
 
 func (c *VideoCapturer) FrameChannel() <-chan image.Image {
 	return c.frames
-}
-
-// TODO -- remove this to a dedicated "pion adapter" class
-func (c *VideoCapturer) Read() (img image.Image, release func(), err error) {
-	release = func() {}
-	img = <-c.frames
-	if img == nil {
-		err = io.EOF
-	}
-	return
 }
 
 //export process_yuv_frame

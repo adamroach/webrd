@@ -3,19 +3,19 @@ package server
 import (
 	"encoding/json"
 
-	"github.com/adamroach/webrd/pkg/hid/keys"
+	"github.com/adamroach/webrd/pkg/hid/key"
 	"github.com/adamroach/webrd/pkg/hid/mouse"
 )
 
-type Type string
+type MessageType string
 
 const (
-	TypeKeyboard     Type = "keyboard"
-	TypeMouseButton  Type = "mouse_button"
-	TypeMouseMove    Type = "mouse_move"
-	TypeOffer        Type = "offer"
-	TypeAnswer       Type = "answer"
-	TypeIceCandidate Type = "ice_candidate"
+	TypeKeyboard     MessageType = "keyboard"
+	TypeMouseButton  MessageType = "mouse_button"
+	TypeMouseMove    MessageType = "mouse_move"
+	TypeOffer        MessageType = "offer"
+	TypeAnswer       MessageType = "answer"
+	TypeIceCandidate MessageType = "candidate"
 )
 
 ///////////////////////////////////////////////////////////////////////////
@@ -23,19 +23,19 @@ const (
 // These messages are sent from the client to the server to control the remote device.
 
 type KeyboardMessage struct {
-	Type  Type       `json:"type"`
-	Event keys.Event `json:"event"`
+	Type  MessageType `json:"type"`
+	Event key.Event   `json:"event"`
 }
 
 type MouseButtonMessage struct {
-	Type  Type        `json:"type"`
+	Type  MessageType `json:"type"`
 	Event mouse.Event `json:"event"`
 }
 
 type MouseMoveMessage struct {
-	Type Type `json:"type"`
-	X    int  `json:"x"`
-	Y    int  `json:"y"`
+	Type MessageType `json:"type"`
+	X    int         `json:"x"`
+	Y    int         `json:"y"`
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -43,18 +43,18 @@ type MouseMoveMessage struct {
 // These messages are sent used to establish a WebRTC connection.
 
 type OfferMessage struct {
-	Type Type   `json:"type"`
-	SDP  string `json:"sdp"`
+	Type MessageType `json:"type"`
+	SDP  string      `json:"sdp"`
 }
 
 type AnswerMessage struct {
-	Type Type   `json:"type"`
-	SDP  string `json:"sdp"`
+	Type MessageType `json:"type"`
+	SDP  string      `json:"sdp"`
 }
 
 type IceCandidateMessage struct {
-	Type      Type      `json:"type"`
-	Candidate Candidate `json:"candidate"`
+	Type      MessageType `json:"type"`
+	Candidate Candidate   `json:"candidate"`
 }
 
 type Candidate struct {
@@ -71,19 +71,20 @@ func MakeMessage(bytes []byte) (msg any, err error) {
 	if err != nil {
 		return
 	}
-	switch msgMap["type"] {
+	msgType, _ := msgMap["type"].(string)
+	switch MessageType(msgType) {
 	case TypeKeyboard:
-		msg = KeyboardMessage{}
+		msg = &KeyboardMessage{}
 	case TypeMouseButton:
-		msg = MouseButtonMessage{}
+		msg = &MouseButtonMessage{}
 	case TypeMouseMove:
-		msg = MouseMoveMessage{}
+		msg = &MouseMoveMessage{}
 	case TypeOffer:
-		msg = OfferMessage{}
+		msg = &OfferMessage{}
 	case TypeAnswer:
-		msg = AnswerMessage{}
+		msg = &AnswerMessage{}
 	case TypeIceCandidate:
-		msg = IceCandidateMessage{}
+		msg = &IceCandidateMessage{}
 	default:
 		msg = msgMap
 		return

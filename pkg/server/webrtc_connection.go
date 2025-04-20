@@ -104,12 +104,14 @@ func WithTURNServers(turnServers []string) func(c *WebRTCConnection) error {
 
 func (c *WebRTCConnection) GetOffer() (string, error) {
 	if c.audioSender != nil {
+		log.Printf("Adding video track")
 		err := c.audioSender.AddTrack(c.pc)
 		if err != nil {
 			return "", fmt.Errorf("error adding audio track: %v", err)
 		}
 	}
 	if c.videoSender != nil {
+		log.Printf("Adding video track")
 		err := c.videoSender.AddTrack(c.pc)
 		if err != nil {
 			return "", fmt.Errorf("error adding video track: %v", err)

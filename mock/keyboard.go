@@ -5,7 +5,7 @@
 package mock
 
 import (
-	"github.com/adamroach/webrd/pkg/hid/keys"
+	"github.com/adamroach/webrd/pkg/hid/key"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -37,7 +37,7 @@ func (_m *Keyboard) EXPECT() *Keyboard_Expecter {
 }
 
 // Key provides a mock function for the type Keyboard
-func (_mock *Keyboard) Key(event keys.Event) error {
+func (_mock *Keyboard) Key(event key.Event) error {
 	ret := _mock.Called(event)
 
 	if len(ret) == 0 {
@@ -45,7 +45,7 @@ func (_mock *Keyboard) Key(event keys.Event) error {
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(keys.Event) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(key.Event) error); ok {
 		r0 = returnFunc(event)
 	} else {
 		r0 = ret.Error(0)
@@ -64,9 +64,9 @@ func (_e *Keyboard_Expecter) Key(event interface{}) *Keyboard_Key_Call {
 	return &Keyboard_Key_Call{Call: _e.mock.On("Key", event)}
 }
 
-func (_c *Keyboard_Key_Call) Run(run func(event keys.Event)) *Keyboard_Key_Call {
+func (_c *Keyboard_Key_Call) Run(run func(event key.Event)) *Keyboard_Key_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(keys.Event))
+		run(args[0].(key.Event))
 	})
 	return _c
 }
@@ -76,7 +76,7 @@ func (_c *Keyboard_Key_Call) Return(err error) *Keyboard_Key_Call {
 	return _c
 }
 
-func (_c *Keyboard_Key_Call) RunAndReturn(run func(event keys.Event) error) *Keyboard_Key_Call {
+func (_c *Keyboard_Key_Call) RunAndReturn(run func(event key.Event) error) *Keyboard_Key_Call {
 	_c.Call.Return(run)
 	return _c
 }

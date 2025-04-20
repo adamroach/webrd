@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/adamroach/webrd/pkg/capture"
@@ -69,22 +70,26 @@ func (s *Session) handleMessages() {
 	for {
 		message, err := s.MessageChannel.Receive()
 		if err != nil {
+			if err == io.EOF {
+				log.Printf("session closed: %v\n", err)
+				return
+			}
 			log.Printf("could not receive message: %v\n", err)
-			break
+			continue
 		}
 
 		switch message := message.(type) {
-		case AnswerMessage:
+		case *AnswerMessage:
 			err = s.WebRTCConnection.SetAnswer(message.SDP)
 			if err != nil {
 				log.Printf("could not set answer: %v\n", err)
 			}
-		case IceCandidateMessage:
+		case *IceCandidateMessage:
 			err = s.WebRTCConnection.AddICECandidate(message.Candidate)
 			if err != nil {
 				log.Printf("could not add ICE candidate: %v\n", err)
 			}
-		case KeyboardMessage:
+		case *KeyboardMessage:
 			if s.Keyboard != nil {
 				err = s.Keyboard.Key(message.Event)
 				if err != nil {
@@ -93,7 +98,7 @@ func (s *Session) handleMessages() {
 			} else {
 				log.Printf("keyboard not available\n")
 			}
-		case MouseButtonMessage:
+		case *MouseButtonMessage:
 			if s.Mouse != nil {
 				err = s.Mouse.Button(message.Event)
 				if err != nil {
@@ -102,7 +107,7 @@ func (s *Session) handleMessages() {
 			} else {
 				log.Printf("mouse not available\n")
 			}
-		case MouseMoveMessage:
+		case *MouseMoveMessage:
 			if s.Mouse != nil {
 				err = s.Mouse.Move(message.X, message.Y)
 				if err != nil {
@@ -112,7 +117,7 @@ func (s *Session) handleMessages() {
 			// we don't log the "else" clause here because it would be too noisy
 
 		default:
-			fmt.Printf("unexpected message type: %T\n", message)
+			fmt.Printf("unexpected message type: %+v\n", message)
 		}
 	}
 }
