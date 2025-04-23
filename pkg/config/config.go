@@ -31,6 +31,7 @@ type IceServer struct {
 }
 
 type Ssl struct {
+	Enabled  bool   `mapstructure:"enabled" yaml:"enabled"`
 	CertFile string `mapstructure:"cert_file" yaml:"cert_file"`
 	KeyFile  string `mapstructure:"key_file" yaml:"key_file"`
 }
