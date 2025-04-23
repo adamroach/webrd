@@ -124,7 +124,7 @@ func (s *Session) handleMessages() {
 			// we don't log the "else" clause here because it would be too noisy
 
 		default:
-			fmt.Printf("unexpected message type: %+v\n", message)
+			log.Printf("unexpected message type: %+v\n", message)
 		}
 	}
 }

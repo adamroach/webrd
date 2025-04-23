@@ -2,14 +2,17 @@ package main
 
 import (
 	"github.com/adamroach/webrd/pkg/capture"
+	"github.com/adamroach/webrd/pkg/config"
 	"github.com/adamroach/webrd/pkg/hid"
 	"github.com/adamroach/webrd/pkg/server"
 )
 
 func main() {
+	config := config.NewConfig()
+
 	server := server.Server{
 		MakeVideoCapturer: func() (capture.VideoCapturer, error) {
-			return capture.NewVideoCapturer()
+			return capture.NewVideoCapturer(config.Video.Framerate)
 		},
 		MakeAudioCapturer: nil,
 		MakeKeyboard: func() (hid.Keyboard, error) {
@@ -19,5 +22,5 @@ func main() {
 			return hid.NewMouse()
 		},
 	}
-	panic(server.Run())
+	panic(server.Run(config))
 }

@@ -2,11 +2,13 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/adamroach/webrd/pkg/capture"
+	"github.com/adamroach/webrd/pkg/config"
 	"github.com/adamroach/webrd/pkg/hid"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -20,10 +22,12 @@ type Server struct {
 	MakeMouse         func() (hid.Mouse, error)
 	mu                sync.RWMutex // mutex to protect access to sessions
 	sessions          map[uuid.UUID]*Session
+	serverError       chan (error)
+	config            *config.Config
 }
 
-func (s *Server) Run() error {
-	const listen = ":8080" // TODO make this configurable
+func (s *Server) Run(config *config.Config) error {
+	s.config = config
 	s.sessions = make(map[uuid.UUID]*Session)
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -44,8 +48,16 @@ func (s *Server) Run() error {
 		fs.ServeHTTP(w, r)
 	})
 
-	fmt.Printf("Server listening on %s\n", listen)
-	return http.ListenAndServe(listen, r)
+	s.serverError = make(chan error)
+	for _, bindAddress := range config.BindAddresses {
+		go s.listenAndServe(bindAddress, r)
+	}
+	return <-s.serverError
+}
+
+func (s *Server) listenAndServe(address string, r *chi.Mux) {
+	log.Printf("Server listening on %s\n", address)
+	s.serverError <- http.ListenAndServe(address, r)
 }
 
 func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
@@ -83,14 +95,14 @@ func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
 		}
 	}
 
-	videoEncoder, err := NewVideoEncoder(videoCapturer, 8_000_000, 30) // TODO make this configurable
+	videoEncoder, err := NewVideoEncoder(videoCapturer, s.config.Video.Bitrate, s.config.Video.Framerate)
 	if err != nil {
 		return nil, fmt.Errorf("could not create video encoder: %v", err)
 	}
 	videoSender := NewVideoSender(videoEncoder)
 	webRTCConnection, err := NewWebRTCConnection(
 		WithVideoSender(videoSender),
-		WithTURNServers([]string{"stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"}), // TODO make this configurable
+		WithICEServers(s.config.IceServers),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create WebRTC connection: %v", err)

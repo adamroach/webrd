@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/adamroach/webrd/pkg/config"
 	"github.com/pion/interceptor"
 	"github.com/pion/webrtc/v4"
 )
@@ -12,7 +13,7 @@ type WebRTCConnection struct {
 	pc          *webrtc.PeerConnection
 	videoSender Sender
 	audioSender Sender
-	turnServers []string
+	iceServers  []webrtc.ICEServer
 }
 
 func NewWebRTCConnection(opts ...func(*WebRTCConnection) error) (*WebRTCConnection, error) {
@@ -44,17 +45,13 @@ func NewWebRTCConnection(opts ...func(*WebRTCConnection) error) (*WebRTCConnecti
 	}
 
 	se := webrtc.SettingEngine{}
-	config := webrtc.Configuration{}
-	if len(c.turnServers) > 0 {
-		config.ICEServers = []webrtc.ICEServer{
-			{
-				URLs: c.turnServers,
-			},
-		}
+	pcConfig := webrtc.Configuration{}
+	if len(c.iceServers) > 0 {
+		pcConfig.ICEServers = c.iceServers
 	}
 
 	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithInterceptorRegistry(ir), webrtc.WithSettingEngine(se))
-	c.pc, err = api.NewPeerConnection(config)
+	c.pc, err = api.NewPeerConnection(pcConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error creating peer connection: %v", err)
 	}
@@ -95,9 +92,21 @@ func WithAudioSender(sender *AudioSender) func(c *WebRTCConnection) error {
 	}
 }
 
-func WithTURNServers(turnServers []string) func(c *WebRTCConnection) error {
+func WithICEServers(iceServers []config.IceServer) func(c *WebRTCConnection) error {
 	return func(c *WebRTCConnection) error {
-		c.turnServers = turnServers
+		for _, server := range iceServers {
+			iceServer := webrtc.ICEServer{
+				URLs: server.Urls,
+			}
+			if server.Username != nil {
+				iceServer.Username = *server.Username
+			}
+			if server.Credential != nil {
+				iceServer.Credential = *server.Credential
+				iceServer.CredentialType = webrtc.ICECredentialTypePassword
+			}
+			c.iceServers = append(c.iceServers, iceServer)
+		}
 		return nil
 	}
 }

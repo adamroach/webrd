@@ -1,0 +1,16 @@
+bind_addresses:
+- :8080
+- :8081
+video:
+  bitrate: 8000000
+  framerate: 30
+ice_servers:
+- urls:
+  - stun:stun.l.google.com:19302
+  - stun:stun1.l.google.com:19302
+ssl:
+  cert_file: ./cert.pem
+  key_file: ./key.pem
+security:
+  check_origin: true
+  additional_origins: []

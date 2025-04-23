@@ -1,9 +1,9 @@
 package server
 
 import (
-	"fmt"
 	"image"
 	"io"
+	"log"
 
 	"github.com/adamroach/webrd/pkg/capture"
 	"github.com/pion/mediadevices/pkg/codec"
@@ -65,7 +65,7 @@ func (e *VideoEncoder) Read() (b []byte, release func(), err error) {
 		e.encoder = nil
 		e.width = e.reader.image.Bounds().Dx()
 		e.height = e.reader.image.Bounds().Dy()
-		fmt.Printf("Initializing H.264 encoder: %d x %d @ %vfps\n", e.width, e.height, e.framerate)
+		log.Printf("Initializing H.264 encoder: %d x %d @ %vfps\n", e.width, e.height, e.framerate)
 		params, _ := openh264.NewParams()
 		params.BitRate = e.bitrate
 		params.EnableFrameSkip = false

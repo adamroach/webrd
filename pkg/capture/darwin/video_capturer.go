@@ -39,14 +39,16 @@ import (
 )
 
 type VideoCapturer struct {
-	capturer unsafe.Pointer // Can't use C.VideoCapturer because objective-C objects aren't handled completely by Go
-	frames   chan (image.Image)
+	capturer  unsafe.Pointer // Can't use C.VideoCapturer because objective-C objects aren't handled completely by Go
+	frames    chan (image.Image)
+	framerate int
 }
 
-func NewVideoCapturer() (*VideoCapturer, error) {
+func NewVideoCapturer(framerate int) (*VideoCapturer, error) {
 	c := &VideoCapturer{
-		capturer: C.newVideoCapturer(),
-		frames:   make(chan image.Image, 4),
+		capturer:  C.newVideoCapturer(),
+		frames:    make(chan image.Image, 4),
+		framerate: framerate,
 	}
 	runtime.SetFinalizer(c, func(c *VideoCapturer) { C.releaseVideoCapturer(c.capturer) })
 	return c, nil
