@@ -20,9 +20,9 @@ static void releaseVideoCapturer(void *capturer){
 	[(VideoCapturer *)capturer release];
 }
 
-static void startVideoCapture(void *capturer, uint64 opaque) {
-	NSLog(@"Starting capture with capturer %p", capturer);
-	[(VideoCapturer *)capturer start:(void *)opaque];
+static void startVideoCapture(void *capturer, int fps, uint64 opaque) {
+	NSLog(@"Starting capture with capturer %p @ %d fps", capturer, fps);
+	[(VideoCapturer *)capturer start:(void *)opaque fps:fps];
 }
 
 static void stopVideoCapture(void *capturer) {
@@ -67,7 +67,7 @@ func (c *VideoCapturer) Start() error {
 	// on the VideoCapturer.
 
 	// TODO: error handling
-	C.startVideoCapture(c.capturer, C.uint64(uintptr(unsafe.Pointer(c))))
+	C.startVideoCapture(c.capturer, C.int(c.framerate), C.uint64(uintptr(unsafe.Pointer(c))))
 	return nil
 }
 

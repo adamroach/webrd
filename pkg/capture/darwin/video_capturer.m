@@ -7,7 +7,7 @@ extern void process_yuv_frame(void *opaque, void *y, void *cb, void *cr,
                               int yStride, int cStride, int width, int height);
 
 @implementation VideoCapturer
-- (void)start:(void *)opaque {
+- (void)start:(void *)opaque fps:(int)fps {
     if (mSession) {
         [self stop];
     }
@@ -32,7 +32,7 @@ extern void process_yuv_frame(void *opaque, void *y, void *cb, void *cr,
         mSession = nil;
         return;
     }
-    input.minFrameDuration = CMTimeMake(1, 30); // 30 fps -- TODO make configurable
+    input.minFrameDuration = CMTimeMake(1, fps);
     if ([mSession canAddInput:input])
         [mSession addInput:input];
 

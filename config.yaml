@@ -1,6 +1,5 @@
 bind_addresses:
 - :8080
-- :8081
 video:
   bitrate: 8000000
   framerate: 30

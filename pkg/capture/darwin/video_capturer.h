@@ -12,7 +12,7 @@
     void *mCallbackOpaque;
 }
 
-- (void)start:(void *)opaque;
+- (void)start:(void *)opaque fps:(int) fps;
 - (void)stop;
 
 @end
