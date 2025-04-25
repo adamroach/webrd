@@ -14,3 +14,10 @@ ssl:
 security:
   check_origin: true
   additional_origins: []
+auth:
+  use_system_auth: true
+  hmac_key: ./hmac.key
+  token_validity_hours: 24
+  users:
+  - username: test
+    password: abc123

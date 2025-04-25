@@ -1,12 +1,14 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 
+	"github.com/adamroach/webrd/pkg/auth"
 	"github.com/adamroach/webrd/pkg/capture"
 	"github.com/adamroach/webrd/pkg/config"
 	"github.com/adamroach/webrd/pkg/hid"
@@ -20,6 +22,7 @@ type Server struct {
 	MakeAudioCapturer func() (capture.AudioCapturer, error)
 	MakeKeyboard      func() (hid.Keyboard, error)
 	MakeMouse         func() (hid.Mouse, error)
+	Authenticator     auth.Authenticator
 	mu                sync.RWMutex // mutex to protect access to sessions
 	sessions          map[uuid.UUID]*Session
 	serverError       chan (error)
@@ -35,6 +38,8 @@ func (s *Server) Run(config *config.Config) error {
 	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 		ServeWs(s, w, r)
 	})
+
+	r.Post("/v1/login", s.Login)
 
 	// All other paths serve from the filesystem -- TODO convert to go:embed
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -177,4 +182,43 @@ func (s *Server) removeSession(session *Session) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.sessions, session.ID)
+}
+
+func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
+	if s.Authenticator == nil {
+		http.Error(w, "Authenticator not set", http.StatusInternalServerError)
+		return
+	}
+
+	var loginBody struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&loginBody)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	username := loginBody.Username
+	password := loginBody.Password
+
+	token, err := s.Authenticator.Authenticate(username, password)
+	if err != nil {
+		log.Printf("Authentication failed: %v", err)
+		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{
+		"token": token,
+	}
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("Error encoding response: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("User %s logged in successfully", username)
 }

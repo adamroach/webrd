@@ -17,6 +17,19 @@ type Config struct {
 	IceServers    []IceServer `mapstructure:"ice_servers" yaml:"ice_servers"`
 	Ssl           Ssl         `mapstructure:"ssl" yaml:"ssl"`
 	Security      Security    `mapstructure:"security" yaml:"security"`
+	Auth          Auth        `mapstructure:"auth" yaml:"auth"`
+}
+
+type Auth struct {
+	UseSystemAuth      bool   `mapstructure:"use_system_auth" yaml:"use_system_auth"`
+	HmacKey            string `mapstructure:"hmac_key" yaml:"hmac_key"`
+	TokenValidityHours int    `mapstructure:"token_validity_hours" yaml:"token_validity_hours"`
+	Users              []User `mapstructure:"users" yaml:"users"`
+}
+
+type User struct {
+	Username string `mapstructure:"username" yaml:"username"`
+	Password string `mapstructure:"password" yaml:"password"`
 }
 
 type Video struct {
