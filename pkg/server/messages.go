@@ -16,6 +16,8 @@ const (
 	TypeOffer        MessageType = "offer"
 	TypeAnswer       MessageType = "answer"
 	TypeIceCandidate MessageType = "candidate"
+	TypeAuth         MessageType = "auth"
+	TypeAuthFailure  MessageType = "auth_failure"
 )
 
 ///////////////////////////////////////////////////////////////////////////
@@ -74,6 +76,20 @@ type Candidate struct {
 	UsernameFragment string `json:"usernameFragment"`
 }
 
+///////////////////////////////////////////////////////////////////////////
+// Auth messages
+// These messages are sent from the client to the server to authenticate the user.
+
+type AuthMessage struct {
+	Type  MessageType `json:"type"`
+	Token string      `json:"token"`
+}
+
+type AuthFailureMessage struct {
+	Type  MessageType `json:"type"`
+	Error string      `json:"error"`
+}
+
 // /////////////////////////////////////////////////////////////////////////
 func MakeMessage(bytes []byte) (msg any, err error) {
 	var msgMap map[string]any
@@ -97,6 +113,10 @@ func MakeMessage(bytes []byte) (msg any, err error) {
 		msg = &AnswerMessage{}
 	case TypeIceCandidate:
 		msg = &IceCandidateMessage{}
+	case TypeAuth:
+		msg = &AuthMessage{}
+	case TypeAuthFailure:
+		msg = &AuthFailureMessage{}
 	default:
 		msg = msgMap
 		return

@@ -15,7 +15,6 @@ type SystemAuthenticator struct {
 }
 
 func NewSystemAuthenticator(config *config.Auth) *SystemAuthenticator {
-	fmt.Printf("%+v\n", config)
 	secret, err := NewHmacSecret(config.HmacKey)
 	if err != nil {
 		panic(fmt.Errorf("cannot read hmac key: %v", err))

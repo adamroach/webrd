@@ -22,27 +22,28 @@ type Session struct {
 }
 
 func (s *Session) Start() error {
+	offer, err := s.WebRTCConnection.GetOffer()
+	if err != nil {
+		log.Printf("could not get offer: %v", err)
+		return err
+	}
+	err = s.MessageChannel.Send(OfferMessage{Type: TypeOffer, SDP: offer})
+	if err != nil {
+		log.Printf("could not send offer: %v", err)
+	}
 	if s.VideoCapturer != nil {
 		if err := s.VideoCapturer.Start(); err != nil {
-			return fmt.Errorf("could not start video capturer: %v", err)
+			log.Printf("could not start video capturer: %v", err)
+			return err
 		}
 	}
 	if s.AudioCapturer != nil {
 		if err := s.AudioCapturer.Start(); err != nil {
-			return fmt.Errorf("could not start audio capturer: %v", err)
+			log.Printf("could not start audio capturer: %v", err)
+			return err
 		}
 	}
-
-	offer, err := s.WebRTCConnection.GetOffer()
-	if err != nil {
-		return fmt.Errorf("could not get offer: %v", err)
-	}
-	err = s.MessageChannel.Send(OfferMessage{Type: TypeOffer, SDP: offer})
-	if err != nil {
-		return fmt.Errorf("could not send offer: %v", err)
-	}
 	go s.handleMessages()
-
 	return nil
 }
 

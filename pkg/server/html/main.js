@@ -1,5 +1,7 @@
+const websocket = new WebSocket('/ws');
 
 window.addEventListener('load', async () => {
+    const auth = new Auth();
     const videoElement = document.getElementById('video');
     const peerConnection = new RTCPeerConnection({
         iceServers: [
@@ -8,8 +10,71 @@ window.addEventListener('load', async () => {
             }
           ]
     });
-    const websocket = new WebSocket('/ws');
 
+    peerConnection.ontrack = (event) => {
+        videoElement.srcObject = event.streams[0];
+        videoElement.muted = true;
+        videoElement.autoplay = true;
+        videoElement.play();
+    };
+
+    websocket.onmessage = async (event) => {
+        console.log("Received message", event.data)
+        const message = JSON.parse(event.data);
+
+        if (message.type === 'offer') {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription({
+                type: 'offer',
+                sdp: message.sdp,
+            }));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            console.log("Sending answer", answer);
+
+            websocket.send(JSON.stringify({
+                type: 'answer',
+                sdp: answer.sdp
+            }));
+        }
+        if (message.type === 'auth_failure') {
+            auth.reset();
+            auth.login(`<font color="red">${message.error}</font>`);
+        }
+    };
+
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+            console.log("Sending ICE Candidate:" , event)
+            websocket.send(JSON.stringify({
+                type: 'candidate',
+                candidate: event.candidate
+            }));
+        }
+    };
+
+    peerConnection.oniceconnectionstatechange = e => {
+        console.log("ICE Connection State:",  peerConnection.iceConnectionState)
+    }
+
+    websocket.addEventListener("open", () => {
+        auth.on("login", e => {
+            const msg = JSON.stringify({
+                type: 'auth',
+                token: e.token,
+            });
+            websocket.send(msg);
+            captureInput(websocket);
+        });
+        auth.on("failure", e => {
+            console.log("Login failure:", e);
+            auth.login(`<font color="red">${e.reason}</font>`);
+        })
+        auth.login();
+    });
+});
+
+function captureInput(websocket) {
+    const videoElement = document.getElementById('video');
     videoElement.addEventListener('pointermove', (event) => {
         const rect = videoElement.getBoundingClientRect();
         const x = event.offsetX;
@@ -21,13 +86,6 @@ window.addEventListener('load', async () => {
             y: Math.round(y)
         }));
     });
-
-    peerConnection.ontrack = (event) => {
-        videoElement.srcObject = event.streams[0];
-        videoElement.muted = true;
-        videoElement.autoplay = true;
-        videoElement.play();
-    };
 
     sendKeyEvent = function(event) {
         console.log("Key event", event);
@@ -68,38 +126,4 @@ window.addEventListener('load', async () => {
         }));
         event.preventDefault();
     });
-
-    websocket.onmessage = async (event) => {
-        console.log("Received message", event.data)
-        const message = JSON.parse(event.data);
-
-        if (message.type === 'offer') {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription({
-                type: 'offer',
-                sdp: message.sdp,
-            }));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            console.log("Sending answer", answer);
-
-            websocket.send(JSON.stringify({
-                type: 'answer',
-                sdp: answer.sdp
-            }));
-        }
-    };
-
-    peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-            console.log("Sending ICE Candidate:" , event)
-            websocket.send(JSON.stringify({
-                type: 'candidate',
-                candidate: event.candidate
-            }));
-        }
-    };
-
-    peerConnection.oniceconnectionstatechange = e => {
-        console.log("ICE Connection State:",  peerConnection.iceConnectionState)
-    }
-});
+}

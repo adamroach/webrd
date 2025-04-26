@@ -1,0 +1,21 @@
+body {
+    font-family: 'Tahoma', sans-serif
+}
+
+.heading {
+    font-weight: bold;
+}
+
+.heading,
+.value {
+    margin: 0 10px;
+}
+
+button {
+    border: 1px solid white;
+}
+
+button:disabled {
+    color: #404040;
+    border: 1px solid #404040;
+}

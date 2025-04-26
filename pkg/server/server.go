@@ -2,11 +2,14 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/adamroach/webrd/pkg/auth"
 	"github.com/adamroach/webrd/pkg/capture"
@@ -14,6 +17,7 @@ import (
 	"github.com/adamroach/webrd/pkg/hid"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/google/uuid"
 )
 
@@ -34,6 +38,7 @@ func (s *Server) Run(config *config.Config) error {
 	s.sessions = make(map[uuid.UUID]*Session)
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(httprate.LimitByIP(10, 1*time.Second)) // Prevent password brute-force attacks
 
 	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 		ServeWs(s, w, r)
@@ -83,6 +88,11 @@ func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
 	var keyboard hid.Keyboard
 	var mouse hid.Mouse
 	var err error
+
+	err = s.waitForUserAuth(messageChannel)
+	if err != nil {
+		return nil, err
+	}
 
 	if s.MakeVideoCapturer != nil {
 		videoCapturer, err = s.MakeVideoCapturer()
@@ -149,6 +159,43 @@ func (s *Server) NewSession(messageChannel MessageChannel) (*Session, error) {
 	s.mu.Unlock()
 
 	return session, nil
+}
+
+func (s *Server) waitForUserAuth(messageChannel MessageChannel) error {
+	for {
+		message, err := messageChannel.Receive()
+		if err != nil {
+			if err == io.EOF {
+				err = errors.New("connection closed before authentication")
+				log.Printf("%v\n", err)
+				return err
+			}
+			log.Printf("could not receive message: %v\n", err)
+			return err
+		}
+		m, ok := message.(*AuthMessage)
+		if !ok {
+			messageChannel.Send(&AuthFailureMessage{
+				Type:  TypeAuthFailure,
+				Error: "session is not authenticated yet",
+			})
+			continue
+		}
+		username, err := s.Authenticator.ValidateToken(m.Token)
+		if err != nil {
+			log.Printf("could not validate token: %v\n", err)
+			err = messageChannel.Send(&AuthFailureMessage{
+				Type:  TypeAuthFailure,
+				Error: err.Error(),
+			})
+			if err != nil {
+				log.Printf("could not send auth failure message: %v\n", err)
+			}
+			continue
+		}
+		log.Printf("user %s authenticated\n", username)
+		return nil
+	}
 }
 
 func (s *Server) GetSession(id uuid.UUID) (*Session, error) {
