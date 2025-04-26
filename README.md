@@ -1,9 +1,13 @@
 # webrd
+This is a very basic Remote Desktop server and client that allows remote desktop access via a web browser, using WebRTC. It currently works with MacOS desktops, but it should be straightforward to add Linux and Windows support.
+
+It's still very rough around the edges, needs more testing, and needs documentation. 
+
+**Don't turn off TLS unless you're really sure that you want everyone on the local network to spy on your keystrokes.**
 
 # TODO
 In no particular order:
 
-- password authentication
 - fix mouse pointer alignment
 - convey ICE servers to client over websocket
 - convert logging to zap
