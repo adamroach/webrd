@@ -27,7 +27,11 @@ func (s *Session) Start() error {
 		log.Printf("could not get offer: %v", err)
 		return err
 	}
-	err = s.MessageChannel.Send(OfferMessage{Type: TypeOffer, SDP: offer})
+	offerMessage := OfferMessage{Type: TypeOffer, SDP: offer}
+	if len(s.Server.config.IceServers) > 0 {
+		offerMessage.IceServers = s.Server.config.IceServers
+	}
+	err = s.MessageChannel.Send(offerMessage)
 	if err != nil {
 		log.Printf("could not send offer: %v", err)
 	}

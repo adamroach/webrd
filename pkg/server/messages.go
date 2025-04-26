@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 
+	"github.com/adamroach/webrd/pkg/config"
 	"github.com/adamroach/webrd/pkg/hid/key"
 )
 
@@ -55,8 +56,9 @@ type MouseWheelMessage struct {
 // These messages are sent used to establish a WebRTC connection.
 
 type OfferMessage struct {
-	Type MessageType `json:"type"`
-	SDP  string      `json:"sdp"`
+	Type       MessageType        `json:"type"`
+	SDP        string             `json:"sdp"`
+	IceServers []config.IceServer `json:"iceServers,omitempty"`
 }
 
 type AnswerMessage struct {

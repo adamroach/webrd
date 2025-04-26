@@ -38,9 +38,9 @@ type Video struct {
 }
 
 type IceServer struct {
-	Username   *string  `mapstructure:"username" yaml:"username,omitempty"`
-	Credential *string  `mapstructure:"credential" yaml:"credential,omitempty"`
-	Urls       []string `mapstructure:"urls" yaml:"urls"`
+	Username   *string  `mapstructure:"username" yaml:"username,omitempty" json:"username,omitempty"`
+	Credential *string  `mapstructure:"credential" yaml:"credential,omitempty" json:"credential,omitempty"`
+	Urls       []string `mapstructure:"urls" yaml:"urls" json:"urls"`
 }
 
 type Ssl struct {
