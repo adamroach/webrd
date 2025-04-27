@@ -67,17 +67,17 @@ func (s *Server) Run(config *config.Config) error {
 
 func (s *Server) listenAndServe(address string, r *chi.Mux) {
 	log.Printf("Server listening on %s\n", address)
-	if s.config.Ssl.Enabled {
-		err := CheckCert(s.config.Ssl.CertFile, s.config.Ssl.KeyFile)
+	if s.config.Tls.Enabled {
+		err := CheckCert(s.config.Tls.CertFile, s.config.Tls.KeyFile)
 		if err != nil {
-			log.Printf("SSL certs could not be validated or created: %v\n", err)
+			log.Printf("TLS certs could not be validated or created: %v\n", err)
 			s.serverError <- err
 			return
 		}
-		log.Printf("SSL enabled, using cert %s and key %s\n", s.config.Ssl.CertFile, s.config.Ssl.KeyFile)
-		s.serverError <- http.ListenAndServeTLS(address, s.config.Ssl.CertFile, s.config.Ssl.KeyFile, r)
+		log.Printf("TLS enabled, using cert %s and key %s\n", s.config.Tls.CertFile, s.config.Tls.KeyFile)
+		s.serverError <- http.ListenAndServeTLS(address, s.config.Tls.CertFile, s.config.Tls.KeyFile, r)
 	} else {
-		log.Printf("DANGER: SSL DISABLED -- THIS ALLOWS ANYONE ON YOUR LOCAL NETWORK TO SPY ON YOUR KEYSTROKES\n")
+		log.Printf("DANGER: TLS DISABLED -- THIS ALLOWS ANYONE ON YOUR LOCAL NETWORK TO SPY ON YOUR KEYSTROKES\n")
 		s.serverError <- http.ListenAndServe(address, r)
 	}
 }

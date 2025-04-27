@@ -7,7 +7,7 @@ ice_servers:
 - urls:
   - stun:stun.l.google.com:19302
   - stun:stun1.l.google.com:19302
-ssl:
+tls:
   enabled: true
   cert_file: ./cert.pem
   key_file: ./key.pem

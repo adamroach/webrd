@@ -15,7 +15,7 @@ type Config struct {
 	BindAddresses []string    `mapstructure:"bind_addresses" yaml:"bind_addresses"`
 	Video         Video       `mapstructure:"video" yaml:"video"`
 	IceServers    []IceServer `mapstructure:"ice_servers" yaml:"ice_servers"`
-	Ssl           Ssl         `mapstructure:"ssl" yaml:"ssl"`
+	Tls           Tls         `mapstructure:"tls" yaml:"tls"`
 	Security      Security    `mapstructure:"security" yaml:"security"`
 	Auth          Auth        `mapstructure:"auth" yaml:"auth"`
 }
@@ -43,7 +43,7 @@ type IceServer struct {
 	Urls       []string `mapstructure:"urls" yaml:"urls" json:"urls"`
 }
 
-type Ssl struct {
+type Tls struct {
 	Enabled  bool   `mapstructure:"enabled" yaml:"enabled"`
 	CertFile string `mapstructure:"cert_file" yaml:"cert_file"`
 	KeyFile  string `mapstructure:"key_file" yaml:"key_file"`
@@ -79,8 +79,8 @@ func NewConfig() *Config {
 	c.viper.SetDefault("bind_addresses", []string{":8080"})
 	c.viper.SetDefault("video.bitrate", 8_000_000)
 	c.viper.SetDefault("video.framerate", 30)
-	c.viper.SetDefault("ssl.cert_file", "./cert.pem")
-	c.viper.SetDefault("ssl.key_file", "./key.pem")
+	c.viper.SetDefault("tls.cert_file", "./cert.pem")
+	c.viper.SetDefault("tls.key_file", "./key.pem")
 	c.viper.SetDefault("security.check_origin", true)
 
 	err = c.viper.Unmarshal(c)
