@@ -175,8 +175,8 @@ class Client {
                 }
                 break;
             case "auth_failure":
-                auth.reset();
-                await this.login(`<font color="red">${message.error}</font>`);
+                this.auth.reset();
+                this.login(`<font color="red">${message.error}</font>`);
                 break;
             default:
                 console.log("Received unexpected message type:", message);
