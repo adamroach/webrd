@@ -8,7 +8,6 @@ It's still very rough around the edges, needs more testing, and needs documentat
 # TODO
 In no particular order:
 
-- fix mouse pointer alignment
 - documentation
 - convert logging to zap
 - audio capture

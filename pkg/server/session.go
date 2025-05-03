@@ -105,7 +105,8 @@ func (s *Session) handleMessages() {
 			}
 		case *MouseButtonMessage:
 			if s.Mouse != nil {
-				err = s.Mouse.Button(message.Button, message.X, message.Y, message.Down)
+				x, y := s.convertCoordinates(message.X, message.Y)
+				err = s.Mouse.Button(message.Button, x, y, message.Down)
 				if err != nil {
 					log.Printf("could not send mouse button event: %v\n", err)
 				}
@@ -121,7 +122,8 @@ func (s *Session) handleMessages() {
 			}
 		case *MouseMoveMessage:
 			if s.Mouse != nil {
-				err = s.Mouse.Move(message.X, message.Y)
+				x, y := s.convertCoordinates(message.X, message.Y)
+				err = s.Mouse.Move(x, y)
 				if err != nil {
 					log.Printf("could not send mouse move event: %v\n", err)
 				}
@@ -132,4 +134,12 @@ func (s *Session) handleMessages() {
 			log.Printf("unexpected message type: %+v\n", message)
 		}
 	}
+}
+
+func (s *Session) convertCoordinates(xPercent, yPercent float64) (int, int) {
+	// Convert the percentage coordinates to absolute coordinates
+	bounds := s.VideoCapturer.GetBounds()
+	x := int(float64(bounds.Dx()) * xPercent)
+	y := int(float64(bounds.Dy()) * yPercent)
+	return x, y
 }

@@ -33,15 +33,15 @@ type KeyboardMessage struct {
 type MouseButtonMessage struct {
 	Type   MessageType `json:"type"`
 	Button int         `json:"button"`
-	X      int         `json:"x"`
-	Y      int         `json:"y"`
+	X      float64     `json:"x"`
+	Y      float64     `json:"y"`
 	Down   bool        `json:"down"`
 }
 
 type MouseMoveMessage struct {
 	Type MessageType `json:"type"`
-	X    int         `json:"x"`
-	Y    int         `json:"y"`
+	X    float64     `json:"x"`
+	Y    float64     `json:"y"`
 }
 
 type MouseWheelMessage struct {

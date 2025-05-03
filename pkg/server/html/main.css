@@ -19,3 +19,7 @@ button:disabled {
     color: #404040;
     border: 1px solid #404040;
 }
+
+video {
+    cursor: crosshair;
+}

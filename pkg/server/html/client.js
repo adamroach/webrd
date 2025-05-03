@@ -99,17 +99,27 @@ class Client {
         };
     }
 
+    coordinates(event) {
+        const x =
+            event.offsetX /
+            this.videoElement.clientWidth /
+            window.devicePixelRatio;
+        const y =
+            event.offsetY /
+            this.videoElement.clientHeight /
+            window.devicePixelRatio;
+        return { x, y };
+    }
+
     captureInput() {
         this.videoElement.addEventListener("pointermove", (event) => {
-            const rect = this.videoElement.getBoundingClientRect();
-            const x = event.offsetX;
-            const y = event.offsetY;
+            const { x, y } = this.coordinates(event);
 
             this.websocket.send(
                 JSON.stringify({
                     type: "mouse_move",
-                    x: Math.round(x),
-                    y: Math.round(y),
+                    x,
+                    y,
                 }),
             );
         });
@@ -134,17 +144,19 @@ class Client {
 
         const sendMouseButtonEvent = (event) => {
             console.log("Mouse button event", event);
+            const { x, y } = this.coordinates(event);
             this.websocket.send(
                 JSON.stringify({
                     type: "mouse_button",
                     button: event.button,
-                    x: event.clientX,
-                    y: event.clientY,
+                    x,
+                    y,
                     down: event.type === "mousedown",
                 }),
             );
             event.preventDefault();
         };
+
         this.videoElement.addEventListener("mousedown", sendMouseButtonEvent);
         this.videoElement.addEventListener("mouseup", sendMouseButtonEvent);
 

@@ -17,7 +17,12 @@ Examples:
 Swift example including AVCaptureVideoDataOutput:
   https://developer.apple.com/documentation/avfoundation/setting-up-a-capture-session
 
-  ---------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
-  MacOS keypress events:
-    https://stackoverflow.com/questions/10734349/simulate-keypress-for-system-wide-hotkeys
+ MacOS keypress events:
+  https://stackoverflow.com/questions/10734349/simulate-keypress-for-system-wide-hotkeys
+
+---------------------------------------------------------------------------
+
+Linux framebuffer information:
+  https://cmcenroe.me/2018/01/30/fbclock.html

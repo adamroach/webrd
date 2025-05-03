@@ -35,6 +35,7 @@ import "C"
 import (
 	"image"
 	"runtime"
+	"sync"
 	"unsafe"
 )
 
@@ -42,6 +43,8 @@ type VideoCapturer struct {
 	capturer  unsafe.Pointer // Can't use C.VideoCapturer because objective-C objects aren't handled completely by Go
 	frames    chan (image.Image)
 	framerate int
+	bounds    image.Rectangle
+	mu        sync.RWMutex // protects access to coordinates
 }
 
 func NewVideoCapturer(framerate int) (*VideoCapturer, error) {
@@ -76,7 +79,16 @@ func (c *VideoCapturer) Stop() error {
 	return nil
 }
 
+func (c *VideoCapturer) GetBounds() image.Rectangle {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.bounds
+}
+
 func (c *VideoCapturer) processFrame(img image.Image) {
+	c.mu.Lock()
+	c.bounds = img.Bounds()
+	c.mu.Unlock()
 	c.frames <- img
 }
 
